@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using LiveSplit.ComponentUtil;
 
@@ -9,7 +9,9 @@ namespace LiveSplit.Kingpin
     class KingpinGame : Game
     {
         private static readonly Type[] eventTypes = new Type[] { typeof(LoadedMapEvent),
-                                                                 typeof(FinishedMapEvent) };
+                                                                 typeof(FinishedMapEvent),
+                                                                 typeof(MapChangedEvent),
+                                                                 typeof(FinalCutsceneEvent) };
         public override Type[] EventTypes => eventTypes;
 
         public override string Name => "Kingpin";
@@ -88,6 +90,36 @@ namespace LiveSplit.Kingpin
         }
     }
 
+    class MapChangedEvent : NoAttributeEvent
+    {
+        public override string Description => "A different map was loaded.";
+
+        public override bool HasOccured(GameInfo info)
+        {
+            return info.MapChanged;
+        }
+
+        public override string ToString()
+        {
+            return "Map has changed";
+        }
+    }
+
+    class FinalCutsceneEvent : NoAttributeEvent
+    {
+        public override string Description => "Final cutscene on rcboss2 started.";
+
+        public override bool HasOccured(GameInfo info)
+        {
+            return info.CurrentMap == "rcboss2.bsp" && info.InFinalCutscene;
+        }
+
+        public override string ToString()
+        {
+            return "Final cutscene started";
+        }
+    }
+
     public enum KingpinState
     {
         MenuOrLoading = 3, InGame = 4
@@ -108,9 +140,11 @@ namespace LiveSplit.ComponentAutosplitter
         public string PreviousMap { get; private set; }
         public string CurrentMap { get; private set; }
         public bool MapChanged { get; private set; }
+        public bool InFinalCutscene { get; private set; }
 
         private Int32 mapAddress = 0x90A705;
         private Int32 gameStateAddress = 0xE7A180;
+        private Int32 finalCutsceneAddress = 0xAA48DD;
 
         partial void UpdateInfo()
         {
@@ -129,6 +163,12 @@ namespace LiveSplit.ComponentAutosplitter
             else
             {
                 MapChanged = false;
+            }
+
+            InFinalCutscene = false;
+            if (gameProcess.ReadValue(baseAddress + finalCutsceneAddress, out byte finalCutscene))
+            {
+                InFinalCutscene = (finalCutscene != 0);
             }
         }
 
