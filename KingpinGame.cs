@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using LiveSplit.ComponentUtil;
 
@@ -14,8 +14,6 @@ namespace LiveSplit.Kingpin
 
         public override string Name => "Kingpin";
         public override string[] ProcessNames => new string[] { "kingpin" };
-        public override bool GameTimeExists => false;
-        public override bool LoadRemovalExists => true;
 
         public KingpinGame() : base(new CustomSettingBool[]{})
         {
@@ -102,6 +100,9 @@ namespace LiveSplit.ComponentAutosplitter
 
     partial class GameInfo
     {
+        public bool GameTimeExists => false;
+        public bool LoadRemovalExists => true;
+
         public KingpinState PreviousGameState { get; private set; }
         public KingpinState CurrentGameState { get; private set; }
         public string PreviousMap { get; private set; }
